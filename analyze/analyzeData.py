@@ -16,6 +16,8 @@
 # | # of load, # of load cases, # of constraints, # of geometries, # of keep in/out
 
 import json
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def main():
@@ -43,6 +45,38 @@ def main():
 
     for k, v in studies_dict_count.items():
         print("{:<30} = {}".format(k, v))
+
+    print("*****************************************\n\n")
+    
+    # analysis of keep_in, keep_outs, # of geometries, # of loads
+    hist_count = []
+    hist_name = 'number_of_keep_ins'
+
+    for entry in studies_data['study']:
+        if hist_name in entry:
+            hist_count.append(entry[hist_name])
+        else:
+            hist_count.append(0)
+    hist_count = np.asarray(hist_count)
+    print(hist_count[:5])
+
+    hist, bin_edges = np.histogram(hist_count)
+    print(hist)
+    print(bin_edges)
+
+    n, bins, patches = plt.hist(x=hist_count, bins='auto', color='#0504aa',
+                            alpha=0.7, rwidth=0.85)
+                            # rwidth=0.85)
+    plt.grid(axis='y', alpha=0.75)
+    # plt.grid(axis='y')
+    plt.xlabel('Value')
+    plt.ylabel('Frequency')
+    plt.title(hist_name)
+    # plt.text(23, 45, r'$\mu=15, b=3$')
+    maxfreq = n.max()
+    # Set a clean upper y-axis limit.
+    # plt.ylim(ymax=np.ceil(maxfreq / 10) * 10 if maxfreq % 10 else maxfreq + 10)
+    plt.show()
 
 def count_key_entries(data, data_key_name, longest_key):
     dict_count = {}
