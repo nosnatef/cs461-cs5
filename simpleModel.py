@@ -1,7 +1,4 @@
-import numpy as np
-import pickle
-import torch
-from model.simple import LinearRegression
+from simple import *
 
 def main():
 

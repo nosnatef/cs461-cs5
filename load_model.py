@@ -1,7 +1,4 @@
-import torch
-import numpy as np
-import LinearRegression
-
+from simple import *
 
 def main():
     model = LinearRegression()
