@@ -1,11 +1,11 @@
 import torch
 import numpy as np
-from model.simple import LinearRegression
+import LinearRegression
 
 
 def main():
     model = LinearRegression()
-    model.load_state_dict(torch.load('model/saved_models/simple.pt'))
+    model.load_state_dict(torch.load('simple.pt'))
     model.eval()
 
     a = np.array([12])
