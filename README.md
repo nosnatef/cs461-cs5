@@ -11,4 +11,4 @@ The repo is pretty straight forward where different directories represent differ
 
 - Machine Learning relates to all the code that is being used to generate the model
 
-- Fusion API is the code being used through Fusion360's API
+- Fusion API is the code being used through Fusion360's API to communicate with our server on AWS
