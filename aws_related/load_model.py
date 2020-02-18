@@ -10,3 +10,4 @@ def output_prediction(number):
     prediction = model(a)
     prediction = prediction.detach().numpy()
     print('prediction: ', prediction[0])
+    return prediction[0]
