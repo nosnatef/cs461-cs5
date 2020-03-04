@@ -25,18 +25,23 @@ def main():
 
     studies_solve_data = grab_solvetimes_file('data/solveTimes.txt')
 
-    dataset = generate_dataset(studies_data, studies_solve_data, entry = 'number_of_geometries', file_path = 'data')
+    entry = ['number_of_keep_outs', 'number_of_loads', 'number_of_geometries', 'number_of_keep_ins']
+    entry_name = 'four'
+
+    dataset = generate_dataset(studies_data, studies_solve_data, entry = entry, file_path = 'data')
 
     dataset = np.asarray(dataset)
 
-    write_dataset_to_file(dataset)
+    write_dataset_to_file(dataset, entry_name)
 
 
     # To check if pickle worked properly
-    with open ('data/dataset.p', 'rb') as fp:
+    file_name = entry_name + '_dataset.p'
+    with open ('data/' + file_name, 'rb') as fp:
         itemlist = pickle.load(fp) 
     
     print(itemlist)
+    print(itemlist.shape)
 
 
 def new_data(old_data, key_name=''):
@@ -68,20 +73,27 @@ def generate_dataset(x_data, y_data, entry, file_path):
         group = []
         for y_entry in y_data:
             if x_entry['id'] == y_entry[0]:
-                group.append(x_entry[entry])
+                for name in entry:
+                    if name in x_entry:
+                        # print(name)
+                        group.append(x_entry[name])
+                    # else:
+                        # print(name)
+                
                 group.append(y_entry[1])
         if len(group) > 0:
             dataset.append(group)
 
     return dataset
 
-def write_dataset_to_file(dataset):
+def write_dataset_to_file(dataset, entry_name):
 
     # with open('data/dataset.txt', 'w+') as f:
     #     for entry in dataset:
     #         f.write(entry)
 
-    with open('data/dataset.p', 'wb') as fp:
+    file_name = entry_name + '_dataset.p'
+    with open('data/' + file_name, 'wb') as fp:
         pickle.dump(dataset, fp)
 
 
