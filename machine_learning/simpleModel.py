@@ -67,7 +67,7 @@ def main():
     result = result.detach().numpy()
     avg_result = np.sum(result) / result.size
     print("predicted Y value: \n", y_pred)
-    print("test loss: \n",  avg_result/3600)
+    print("test loss: \n",  avg_result)
 
 
     torch.save(model.state_dict(), 'model/saved_models/' + name + '.pt')

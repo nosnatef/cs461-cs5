@@ -111,7 +111,7 @@ def grab_solvetimes_file(file_path):
     solve_data = []
     for line in solve_file:
         entry = line.split()
-        entry[1] = float(entry[1])
+        entry[1] = (float(entry[1]) / 3600)
         solve_data.append(entry)
 
     return solve_data
