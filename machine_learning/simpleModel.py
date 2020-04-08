@@ -4,7 +4,8 @@ def main():
 
     # name = 'number_of_loads_dataset'
     # name = 'number_of_geometries_dataset'
-    name = 'four_dataset'
+    # name = 'four_dataset'
+    name = 'four_normalized_dataset'
     entry = name + '.p'
 
     with open ('data/' + entry, 'rb') as fp:

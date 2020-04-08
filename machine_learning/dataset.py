@@ -28,11 +28,12 @@ def main():
 
     studies_solve_data = grab_solvetimes_file('data/solveTimes.txt')
 
-    # entry = ['number_of_keep_outs', 'number_of_loads', 'number_of_geometries', 'number_of_keep_ins']
     ##############################################
-    # voxels seems promising
-    entry = ['target_volume']
+    ### voxels seems promising
+    entry = ['voxels']
     entry_name = 'test'
+    # entry = ['number_of_keep_outs', 'number_of_loads', 'number_of_geometries', 'number_of_keep_ins']
+    # entry_name = 'four_normalized'
 
     # dataset = generate_dataset(studies_data, studies_solve_data, entry = entry, file_path = 'data')
     dataset = generate_dataset(finaliter_solve_data, studies_solve_data, name = 'study', entry = entry, file_path = 'data')
@@ -49,6 +50,9 @@ def main():
 
     # write_dataset_to_file(dataset, entry_name)
 
+    dataset = normalize(dataset)
+    write_dataset_to_file(dataset, entry_name)
+
 
     # To check if pickle worked properly
     # file_name = entry_name + '_dataset.p'
@@ -58,6 +62,15 @@ def main():
     # print(itemlist)
     # print(itemlist.shape)
 
+def normalize(dataset):
+    print(dataset)
+    max_list = np.amax(dataset, axis=0)
+    y_entry = len(max_list) - 1
+    max_list[y_entry] = 1.
+    print(max_list)
+    new_dataset = dataset / max_list
+    new_dataset = np.around(new_dataset, 3)
+    return new_dataset
 
 def new_data(old_data, key_name):
     data = {}
@@ -127,8 +140,7 @@ def grab_solvetimes_file(file_path):
     solve_data = []
     for line in solve_file:
         entry = line.split()
-        entry[1] = round(float(entry[1]) / 3600)
-        # print(entry[1])
+        entry[1] = round((float(entry[1]) / 3600), 3)
         solve_data.append(entry)
 
     return solve_data
