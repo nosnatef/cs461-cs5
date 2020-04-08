@@ -1,6 +1,7 @@
 
 import json
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 import pickle
 
@@ -8,13 +9,15 @@ import pickle
 
 def main():
 
-    all_data = grab_json_file('data/filteredSolves.json')
+    raw_solves_data = grab_json_file('data/filteredSolves.json')
 
-    studies = grab_json_file('data/filteredStudies.json')
+    raw_studies_data = grab_json_file('data/filteredStudies.json')
 
-    data, data_key_name = new_data(all_data, 'final_iteration')
+    finaliter_solve_data, finaliter_solve_data_key_name = new_data(raw_solves_data, 'final_iteration')
 
-    studies_data, studies_data_key_name = new_data(studies)
+    # print(finaliter_solve_data)
+
+    studies_data, studies_data_key_name = new_data(raw_studies_data, '')
 
     # for entry in studies_data['study']:
     #     print("*******************************")
@@ -25,26 +28,38 @@ def main():
 
     studies_solve_data = grab_solvetimes_file('data/solveTimes.txt')
 
-    entry = ['number_of_keep_outs', 'number_of_loads', 'number_of_geometries', 'number_of_keep_ins']
-    entry_name = 'four'
+    # entry = ['number_of_keep_outs', 'number_of_loads', 'number_of_geometries', 'number_of_keep_ins']
+    ##############################################
+    # voxels seems promising
+    entry = ['target_volume']
+    entry_name = 'test'
 
-    dataset = generate_dataset(studies_data, studies_solve_data, entry = entry, file_path = 'data')
+    # dataset = generate_dataset(studies_data, studies_solve_data, entry = entry, file_path = 'data')
+    dataset = generate_dataset(finaliter_solve_data, studies_solve_data, name = 'study', entry = entry, file_path = 'data')
 
     dataset = np.asarray(dataset)
 
-    write_dataset_to_file(dataset, entry_name)
+    print(dataset)
+    print(dataset[:, 0])
+    print(dataset[:, 1])
+
+    plt.scatter(dataset[:, 0], dataset[:, 1])
+    plt.show()
+    #############################################
+
+    # write_dataset_to_file(dataset, entry_name)
 
 
     # To check if pickle worked properly
-    file_name = entry_name + '_dataset.p'
-    with open ('data/' + file_name, 'rb') as fp:
-        itemlist = pickle.load(fp) 
+    # file_name = entry_name + '_dataset.p'
+    # with open ('data/' + file_name, 'rb') as fp:
+    #     itemlist = pickle.load(fp) 
     
-    print(itemlist)
-    print(itemlist.shape)
+    # print(itemlist)
+    # print(itemlist.shape)
 
 
-def new_data(old_data, key_name=''):
+def new_data(old_data, key_name):
     data = {}
     name = ''
     count = 0
@@ -65,25 +80,26 @@ def new_data(old_data, key_name=''):
     return data, name
 
 
-def generate_dataset(x_data, y_data, entry, file_path):
+def generate_dataset(x_data, y_data, name, entry, file_path):
 
     dataset = []
 
-    for x_entry in x_data['study']:
+    for x_entry in x_data['solve']:
         group = []
         for y_entry in y_data:
-            if x_entry['id'] == y_entry[0]:
-                for name in entry:
-                    if name in x_entry:
-                        # print(name)
-                        group.append(x_entry[name])
-                    # else:
-                        # print(name)
+            if x_entry['solver_study_id'] == y_entry[0]:
+                for entry_name in entry:
+                    if entry_name in x_entry:
+                        if entry_name == "voxels":
+                            group.append(math.log(x_entry[entry_name]))
+                        else:
+                            group.append(x_entry[entry_name])
                 
                 group.append(y_entry[1])
-        if len(group) > 0:
+        if len(group) > 1:
             dataset.append(group)
 
+    print(dataset)
     return dataset
 
 def write_dataset_to_file(dataset, entry_name):
@@ -111,7 +127,8 @@ def grab_solvetimes_file(file_path):
     solve_data = []
     for line in solve_file:
         entry = line.split()
-        entry[1] = (float(entry[1]) / 3600)
+        entry[1] = round(float(entry[1]) / 3600)
+        # print(entry[1])
         solve_data.append(entry)
 
     return solve_data
