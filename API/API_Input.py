@@ -5,7 +5,6 @@ _ui  = None
 _app = None
 _handlers = []
 
-
 class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
     def __init__(self):
         super().__init__()
