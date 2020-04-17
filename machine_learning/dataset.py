@@ -13,7 +13,7 @@ def main():
 
     raw_studies_data = grab_json_file('data/filteredStudies.json')
 
-    finaliter_solve_data, finaliter_solve_data_key_name = new_data(raw_solves_data, 'final_iteration')
+    solve_data, solve_data_key_name = new_data(raw_solves_data, 'iteration_number')
 
     # print(finaliter_solve_data)
 
@@ -26,31 +26,34 @@ def main():
 
     # the entry 'id' is where the solveTimes refer to
 
-    studies_solve_data = grab_solvetimes_file('data/solveTimes.txt')
+    solvetime_data = grab_solvetimes_file('data/solveTimes.txt')
 
     ##############################################
     ### voxels seems promising
-    entry = ['voxels']
-    entry_name = 'test'
-    # entry = ['number_of_keep_outs', 'number_of_loads', 'number_of_geometries', 'number_of_keep_ins']
-    # entry_name = 'four_normalized'
+    # entry = ['voxels']
+    # entry_name = 'test'
+    entry = ['number_of_keep_outs', 'number_of_loads', 'number_of_geometries', 'number_of_keep_ins']
+    entry_name = 'classify_four_normalized'
 
-    # dataset = generate_dataset(studies_data, studies_solve_data, entry = entry, file_path = 'data')
-    dataset = generate_dataset(finaliter_solve_data, studies_solve_data, name = 'study', entry = entry, file_path = 'data')
+    dataset = generate_dataset(studies_data, solvetime_data, name = 'study', entry = entry, file_path = 'data')
+    # dataset = generate_dataset(solve_data, solvetime_data, name = 'solve', entry = entry, file_path = 'data')
+
+    dataset = classify_solvetimes(dataset)
 
     dataset = np.asarray(dataset)
 
-    print(dataset)
-    print(dataset[:, 0])
-    print(dataset[:, 1])
+    dataset = normalize(dataset)
 
-    plt.scatter(dataset[:, 0], dataset[:, 1])
-    plt.show()
+    print(dataset)
+    # print(dataset[:, 0])
+    # print(dataset[:, 1])
+
+    # plt.scatter(dataset[:, 0], dataset[:, 1])
+    # plt.show()
     #############################################
 
     # write_dataset_to_file(dataset, entry_name)
 
-    dataset = normalize(dataset)
     write_dataset_to_file(dataset, entry_name)
 
 
@@ -62,13 +65,32 @@ def main():
     # print(itemlist)
     # print(itemlist.shape)
 
+def classify_solvetimes(dataset):
+
+    for i in range(len(dataset)):
+        if dataset[i][-1] <= 2:
+            dataset[i][-1] = 0
+            dataset[i][-2] = 0
+            dataset[i][-3] = 1
+        elif dataset[i][-1] > 2 and dataset[i][-1] <= 7:
+            dataset[i][-1] = 0
+            dataset[i][-2] = 1
+            dataset[i][-3] = 0
+        elif dataset[i][-1] > 7:
+            dataset[i][-1] = 1
+            dataset[i][-2] = 0
+            dataset[i][-3] = 0
+    
+    return dataset
+
+
 def normalize(dataset):
-    print(dataset)
+    # print(dataset)
     max_list = np.amax(dataset, axis=0)
     y_entry = len(max_list) - 1
     max_list[y_entry] = 1.
-    print(max_list)
-    new_dataset = dataset / max_list
+    # print(max_list)
+    new_dataset = dataset[:-1] / max_list
     new_dataset = np.around(new_dataset, 3)
     return new_dataset
 
@@ -88,7 +110,8 @@ def new_data(old_data, key_name):
         data[name] = []
         for entry in old_data:
             if key_name in entry:
-                data[name].append(entry)
+                if entry[key_name] == 0:
+                    data[name].append(entry)
  
     return data, name
 
@@ -97,10 +120,15 @@ def generate_dataset(x_data, y_data, name, entry, file_path):
 
     dataset = []
 
-    for x_entry in x_data['solve']:
+    if name == 'solve':
+        match_id = 'solver_study_id'
+    else:
+        match_id = 'id'
+
+    for x_entry in x_data[name]:
         group = []
         for y_entry in y_data:
-            if x_entry['solver_study_id'] == y_entry[0]:
+            if x_entry[match_id] == y_entry[0]:
                 for entry_name in entry:
                     if entry_name in x_entry:
                         if entry_name == "voxels":
@@ -108,6 +136,9 @@ def generate_dataset(x_data, y_data, name, entry, file_path):
                         else:
                             group.append(x_entry[entry_name])
                 
+                # y_class = [0, 0, y_entry[1]]
+                group.append(0)
+                group.append(0)
                 group.append(y_entry[1])
         if len(group) > 1:
             dataset.append(group)

@@ -1,11 +1,13 @@
 from simple import *
+from multi_class_model import *
 
 def main():
 
     # name = 'number_of_loads_dataset'
     # name = 'number_of_geometries_dataset'
     # name = 'four_dataset'
-    name = 'four_normalized_dataset'
+    name = 'classify_four_normalized_dataset'
+    # name = 'test_dataset'
     entry = name + '.p'
 
     with open ('data/' + entry, 'rb') as fp:
@@ -19,9 +21,13 @@ def main():
     idx = round(len(dataset)*0.8)
 
     xData = len(dataset[0]) - 1
+    xData = -3
 
     training_idx, test_idx = indices[:idx], indices[idx:]
-    xTraining, yTraining, xTest, yTest = dataset[training_idx, :xData], dataset[training_idx, xData], dataset[test_idx, :xData], dataset[test_idx, xData]
+    xTraining, yTraining, xTest, yTest = dataset[training_idx, :xData], dataset[training_idx, xData:], dataset[test_idx, :xData], dataset[test_idx, xData:]
+
+    # yTraining = yTraining.astype(int)
+    # yTest = yTest.astype(int)
 
     # print(xTraining.shape)
     # xTraining = xTraining.reshape(-1, 1)
@@ -39,36 +45,51 @@ def main():
     print(yTraining.shape)
     print(xTest.shape)
     print(yTest.shape)
+    print(yTraining)
 
 
 
-    model = LinearRegression()
+    # model = LinearRegression()
+    model = MultiClass()
 
-    loss_fn = torch.nn.MSELoss(reduction = 'mean')
+    # loss_fn = torch.nn.MSELoss(reduction = 'mean')
+    # loss_fn = torch.nn.NLLLoss()
+    # loss_fn = torch.nn.CrossEntropyLoss()
+    # loss_fn = torch.nn.BCEWithLogitsLoss()
+    loss_fn = torch.nn.MultiLabelSoftMarginLoss()
 
-    optimzer = torch.optim.SGD(model.parameters(), lr = 0.001)
+    # optimzer = torch.optim.SGD(model.parameters(), lr = 0.001)
+    optimzer = torch.optim.Adam(model.parameters(), lr = 0.1, weight_decay=1e-4)
 
     for epoch in range(1000):
-        model.train()
+        optimzer.zero_grad()
+        # model.train()
 
         # Forward pass
+        torch.sigmoid(xTraining).data > 0.5
         y_pred = model(xTraining)
+        # print(y_pred)
 
         # Compute Loss
         loss = loss_fn(y_pred, yTraining)
 
         # Backward pass
-        optimzer.zero_grad()
+        # optimzer.zero_grad()
         loss.backward()
         optimzer.step()
-        print('epoch {}, loss {}'.format(epoch, loss))  
+        # print('epoch {}, loss {}'.format(epoch, loss))  
 
+    torch.sigmoid(xTest).data > 0.5
     y_pred = model(xTest)
-    result = (y_pred - yTest) ** 2
-    result = result.detach().numpy()
-    avg_result = np.sum(result) / result.size
-    print("predicted Y value: \n", y_pred)
-    print("test loss: \n",  avg_result)
+    y_pred = torch.argmax(y_pred, 1)
+    # y_pred = y_pred.unsqueeze(0)
+    # target = torch.zeros(y_pred.size(0), 3).scatter_(1, y_pred, 1.)
+    print(y_pred)
+    # result = (y_pred - yTest) ** 2
+    # result = result.detach().numpy()
+    # avg_result = np.sum(result) / result.size
+    # print("predicted Y value: \n", y_pred)
+    # print("test loss: \n",  avg_result)
 
 
     torch.save(model.state_dict(), 'model/saved_models/' + name + '.pt')
