@@ -1,90 +1,53 @@
 import adsk.core, adsk.fusion, traceback
 import socket
 
-_ui  = None
-_app = None
-_handlers = []
-
-class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
-    def __init__(self):
-        super().__init__()
-    def notify(self, args):
-        try:
-
-            cmd = adsk.core.Command.cast(args.command)
-            inputs = cmd.commandInputs
-            
-            onDestroy = MyCommandDestroyHandler()
-            cmd.destroy.add(onDestroy)
-            _handlers.append(onDestroy)
-
-        
-            tabCmdInput1 = inputs.addTabCommandInput('user_input', 'User Input')
-            tab1ChildInputs = tabCmdInput1.children
-
-            strInput = tab1ChildInputs.addStringValueInput('string', 'Text', 'Enter a string')
-
-            returnValue = tab1ChildInputs.addValueInput('value', 'Value', '', adsk.core.ValueInput.createByReal(0.0))
-
-
-        except:
-            _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
-
-            
-class MyCommandDestroyHandler(adsk.core.CommandEventHandler):
-    def __init__(self):
-        super().__init__()
-    def notify(self, args):
-        try:
-            adsk.terminate()
-        except:
-            _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
-
 def run(context):
-    try:
-
-        global _app, _ui
-
-        _app = adsk.core.Application.get()
-        _ui = _app.userInterface
-        
-        cmdDef = _ui.commandDefinitions.itemById('Design_time')
-        if cmdDef:
-            cmdDef.deleteMe()
-
-        cmdDef = _ui.commandDefinitions.addButtonDefinition('Design_time', 'Design_time', 'Design_time')
-
-        onCommandCreated = MyCommandCreatedHandler()
-
-        cmdDef.commandCreated.add(onCommandCreated)
-
-        _handlers.append(onCommandCreated)  
-
-        cmdDef.execute()
-            
-        adsk.autoTerminate(False)
-
-    except:
-        if _ui:
-            _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
-
-
-def stop(context):
     ui = None
     try:
         app = adsk.core.Application.get()
-        ui  = app.userInterface
+        ui = app.userInterface
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(('18.218.162.183', 1234))
 
         ui.messageBox("Starting Connecting!")
 
+        design = app.activeProduct
+        if not design:
+            ui.messageBox('No active Fusion design', 'No Design')
+            return
+
+        # Prompt the user for a string and validate it's valid.
+        isValid = False
+
+
+        while not isValid:
+            # Get a string from the user.
+            retVals = ui.inputBox('Enter a integer', 'Design', '')
+
+            if retVals[1] == True:
+                return
+            
+            input = retVals[0]
+            
+            # Check that a valid length description was entered.
+            unitsMgr = design.unitsManager
+            try:
+                realValue = unitsMgr.evaluateExpression(input, unitsMgr.defaultLengthUnits)
+                isValid = True
+            except:
+                # Invalid expression so display an error and set the flag to allow them
+                # to enter a value again.
+                ui.messageBox('"' + input + '" is not a valid length expression.')
+                isValid = False
+
+
         while True:
-            sendbuf = "exit"                
+            sendbuf = input                
             s.send(sendbuf.encode('utf-8'))   
-            if not sendbuf or sendbuf == 'exit':   
+            if not sendbuf or sendbuf == input:   
                 break
+
         recvbuf = s.recv(1024)
         ui.messageBox("Finish Connecting")
         s.close()
@@ -93,6 +56,9 @@ def stop(context):
 
         ui.messageBox('Stop addin')
 
+    
     except:
         if ui:
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+
+
