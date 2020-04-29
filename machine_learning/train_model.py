@@ -1,5 +1,5 @@
-from simple import *
-from multi_class_model import *
+from models.linear_regression_model import *
+from models.multi_class_model import *
 
 def main():
 
@@ -52,6 +52,8 @@ def main():
     # model = LinearRegression()
     model = MultiClass()
 
+    # model.apply(weights_init)
+
     # loss_fn = torch.nn.MSELoss(reduction = 'mean')
     # loss_fn = torch.nn.NLLLoss()
     # loss_fn = torch.nn.CrossEntropyLoss()
@@ -85,6 +87,12 @@ def main():
     # y_pred = y_pred.unsqueeze(0)
     # target = torch.zeros(y_pred.size(0), 3).scatter_(1, y_pred, 1.)
     print(y_pred)
+    yTest = torch.argmax(yTest, 1)
+    print(yTest)
+
+    correct = (y_pred == yTest).sum()
+    train_accuracy = 100 * correct / len(y_pred)
+    print(train_accuracy)
     # result = (y_pred - yTest) ** 2
     # result = result.detach().numpy()
     # avg_result = np.sum(result) / result.size
@@ -92,9 +100,10 @@ def main():
     # print("test loss: \n",  avg_result)
 
 
-    torch.save(model.state_dict(), 'model/saved_models/' + name + '.pt')
+    torch.save(model.state_dict(), 'models/saved_models/' + name + '.pt')
 
-
+def weights_init(m):
+    torch.nn.init.xavier_uniform(m.weight.data)
 
 
 if __name__ == "__main__":
