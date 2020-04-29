@@ -66,21 +66,31 @@ def main():
     # print(itemlist.shape)
 
 def classify_solvetimes(dataset):
+    count_of_short = 0
+    count_of_med   = 0
+    count_of_long  = 0
 
     for i in range(len(dataset)):
+
         if dataset[i][-1] <= 2:
+            count_of_short += 1
             dataset[i][-1] = 0
             dataset[i][-2] = 0
             dataset[i][-3] = 1
         elif dataset[i][-1] > 2 and dataset[i][-1] <= 7:
+            count_of_med += 1
             dataset[i][-1] = 0
             dataset[i][-2] = 1
             dataset[i][-3] = 0
         elif dataset[i][-1] > 7:
+            count_of_long += 1
             dataset[i][-1] = 1
             dataset[i][-2] = 0
             dataset[i][-3] = 0
     
+    print("count of short: {}".format(count_of_short))
+    print("count of med: {}".format(count_of_med))
+    print("count of long: {}".format(count_of_long))
     return dataset
 
 
@@ -168,11 +178,18 @@ def grab_solvetimes_file(file_path):
 
     solve_file = open(file_path, "r")
 
+    shit_way_to_trim_short_entries = 0
+
     solve_data = []
     for line in solve_file:
         entry = line.split()
         entry[1] = round((float(entry[1]) / 3600), 3)
-        solve_data.append(entry)
+        if entry[1] >= 0.5:
+            if shit_way_to_trim_short_entries == 0:
+                solve_data.append(entry)
+                shit_way_to_trim_short_entries = 1
+            else:
+                shit_way_to_trim_short_entries = 0
 
     return solve_data
 
