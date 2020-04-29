@@ -58,11 +58,11 @@ def main():
         else:
             hist_count.append(0)
     hist_count = np.asarray(hist_count)
-    print(hist_count[:5])
+    # print(hist_count[:5])
 
     hist, bin_edges = np.histogram(hist_count)
-    print(hist)
-    print(bin_edges)
+    # print(hist)
+    # print(bin_edges)
 
     n, bins, patches = plt.hist(x=hist_count, bins='auto', color='#0504aa',
                             alpha=0.7, rwidth=0.85)

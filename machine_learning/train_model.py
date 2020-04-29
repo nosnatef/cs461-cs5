@@ -8,6 +8,8 @@ from models.multi_class_model import *
 
 def main():
 
+    ### Load the Dataset ###
+
     # name = 'number_of_loads_dataset'
     # name = 'number_of_geometries_dataset'
     # name = 'four_dataset'
@@ -21,44 +23,25 @@ def main():
     print(dataset.shape)
     print(dataset)
 
-    indices = np.random.permutation(dataset.shape[0])    
 
-    idx = round(len(dataset)*0.8)
-
-    xData = len(dataset[0]) - 1
-    xData = -3
-
-    training_idx, test_idx = indices[:idx], indices[idx:]
-    xTraining, yTraining, xTest, yTest = dataset[training_idx, :xData], dataset[training_idx, xData:], dataset[test_idx, :xData], dataset[test_idx, xData:]
-
-    # yTraining = yTraining.astype(int)
-    # yTest = yTest.astype(int)
+    ## Split the Dataset into Training and Testing ##
+    xTraining, yTraining, xTest, yTest = split_dataset(dataset)
 
     # print(xTraining.shape)
-    # xTraining = xTraining.reshape(-1, 1)
-    # print(xTraining.shape)
-    # yTraining = yTraining.reshape(-1, 1)
-    # xTest     = xTest.reshape(-1, 1)
-    # yTest     = yTest.reshape(-1, 1)
-
-    xTraining = torch.Tensor(xTraining)
-    yTraining = torch.Tensor(yTraining)
-    xTest     = torch.Tensor(xTest)
-    yTest     = torch.Tensor(yTest)
-
-    print(xTraining.shape)
-    print(yTraining.shape)
-    print(xTest.shape)
-    print(yTest.shape)
-    print(yTraining)
+    # print(yTraining.shape)
+    # print(xTest.shape)
+    # print(yTest.shape)
+    # print(yTraining)
 
 
 
+    ## Load the base framework model ##
     # model = LinearRegression()
     model = MultiClass()
 
     # model.apply(weights_init)
 
+    ## Load the loss function and optimizer ##
     # loss_fn = torch.nn.MSELoss(reduction = 'mean')
     # loss_fn = torch.nn.NLLLoss()
     # loss_fn = torch.nn.CrossEntropyLoss()
@@ -66,10 +49,10 @@ def main():
     loss_fn = torch.nn.MultiLabelSoftMarginLoss()
 
     # optimzer = torch.optim.SGD(model.parameters(), lr = 0.001)
-    optimzer = torch.optim.Adam(model.parameters(), lr = 0.1, weight_decay=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr = 0.1, weight_decay=1e-4)
 
     for epoch in range(1000):
-        optimzer.zero_grad()
+        optimizer.zero_grad()
         # model.train()
 
         # Forward pass
@@ -83,9 +66,10 @@ def main():
         # Backward pass
         # optimzer.zero_grad()
         loss.backward()
-        optimzer.step()
+        optimizer.step()
         # print('epoch {}, loss {}'.format(epoch, loss))  
 
+    ## Output Prediction ##
     torch.sigmoid(xTest).data > 0.5
     y_pred = model(xTest)
     y_pred = torch.argmax(y_pred, 1)
@@ -109,6 +93,25 @@ def main():
 
 def weights_init(m):
     torch.nn.init.xavier_uniform(m.weight.data)
+
+def split_dataset(dataset):
+    indices = np.random.permutation(dataset.shape[0])    
+
+    idx = round(len(dataset)*0.8)
+
+    xData = len(dataset[0]) - 1
+    xData = -3
+
+    training_idx, test_idx = indices[:idx], indices[idx:]
+    xTraining, yTraining, xTest, yTest = dataset[training_idx, :xData], dataset[training_idx, xData:], dataset[test_idx, :xData], dataset[test_idx, xData:]
+
+    xTraining = torch.Tensor(xTraining)
+    yTraining = torch.Tensor(yTraining)
+    xTest     = torch.Tensor(xTest)
+    yTest     = torch.Tensor(yTest)
+
+    return xTraining, yTraining, xTest, yTest
+
 
 
 if __name__ == "__main__":
