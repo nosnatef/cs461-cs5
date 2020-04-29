@@ -51,12 +51,24 @@ def run(context):
         recvbuf = s.recv(1024)
         ui.messageBox("Finish Connecting")
         s.close()
+        
+        feed = recvbuf.decode('utf-8')
+        
+        check = float(feed)
+        if check < 0:
+            ui.messageBox('Invalid Input')
+        else:
+            ui.messageBox('Feedback:' + feed)
 
-        ui.messageBox(recvbuf.decode('utf-8'))
+            if feed == '0':
+                ui.messageBox('Short time frame')
+        
+            if feed == '1':
+                ui.messageBox('Medium time frame')
 
-        ui.messageBox('Stop addin')
+            if feed == '2':
+                ui.messageBox('Long time frame') 
 
-    
     except:
         if ui:
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
