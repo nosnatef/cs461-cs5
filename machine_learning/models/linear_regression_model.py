@@ -1,5 +1,3 @@
-import numpy as np
-import pickle
 import torch
 
 class LinearRegression(torch.nn.Module):
