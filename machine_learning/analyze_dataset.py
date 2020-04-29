@@ -18,6 +18,7 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 
 def main():
@@ -38,45 +39,34 @@ def main():
 
     studies_dict_count = count_key_entries(studies_data, studies_data_key_name, longest_studies_key)
 
-    for k, v in dict_count.items():
-        print("{:<30} = {}".format(k, v))
+    output_key_entries(dict_count, studies_dict_count)
+   
+    see_graph(studies_data)
 
-    print("*****************************************")
-
-    for k, v in studies_dict_count.items():
-        print("{:<30} = {}".format(k, v))
-
-    print("*****************************************\n\n")
+    unit_test_dataset()
     
-    # analysis of keep_in, keep_outs, # of geometries, # of loads
-    hist_count = []
-    hist_name = 'number_of_keep_ins'
+def unit_test_dataset():
+    # name = 'number_of_loads_dataset'
+    # name = 'number_of_geometries_dataset'
+    # name = 'four_dataset'
+    name = 'four_normalized_dataset'
+    # name = 'test_dataset'
+    entry = name + '.p'
 
-    for entry in studies_data['study']:
-        if hist_name in entry:
-            hist_count.append(entry[hist_name])
-        else:
-            hist_count.append(0)
-    hist_count = np.asarray(hist_count)
-    # print(hist_count[:5])
+    with open ('data/' + entry, 'rb') as fp:
+        dataset = pickle.load(fp) 
+ 
+    print(dataset.shape)
+    print(dataset)
 
-    hist, bin_edges = np.histogram(hist_count)
-    # print(hist)
-    # print(bin_edges)
+    for entry in dataset:
+        for element in entry:
+            assert type(element) != type(int), "Error: invalid entry in dataset. Should be all numbers"
+            assert element >= 0, "Error: All entries should be a positive number"
+            assert element < 100000, "Error: entry in dataset too large"
 
-    n, bins, patches = plt.hist(x=hist_count, bins='auto', color='#0504aa',
-                            alpha=0.7, rwidth=0.85)
-                            # rwidth=0.85)
-    plt.grid(axis='y', alpha=0.75)
-    # plt.grid(axis='y')
-    plt.xlabel('Value')
-    plt.ylabel('Frequency')
-    plt.title(hist_name)
-    # plt.text(23, 45, r'$\mu=15, b=3$')
-    maxfreq = n.max()
-    # Set a clean upper y-axis limit.
-    # plt.ylim(ymax=np.ceil(maxfreq / 10) * 10 if maxfreq % 10 else maxfreq + 10)
-    plt.show()
+
+
 
 def count_key_entries(data, data_key_name, longest_key):
     dict_count = {}
@@ -97,13 +87,14 @@ def grab_longest_key(data, data_key_name):
         if entry.keys() not in all_keys:
             all_keys.append(entry.keys())
 
-    longest = 0
     longest_key = []
     for one_key in all_keys:
-        if len(one_key) == longest:
-            print("*NOTE*: Missing key with same length as longest key in dictionary!")
-        elif len(one_key) > longest:
+        if len(one_key) > len(longest_key):
             longest_key = one_key
+
+    for key in all_keys:
+        if len(key) != len(longest_key):
+            "*Note*: Inconsistent keys in file"
 
     # print(len(longest_key))
     # print(longest_key)
@@ -129,7 +120,48 @@ def new_data(old_data, key_name=''):
  
     return data, name
 
+def see_graph(data):
+    # analysis of keep_in, keep_outs, # of geometries, # of loads
+    hist_count = []
+    hist_name = 'number_of_keep_ins'
 
+    for entry in data['study']:
+        if hist_name in entry:
+            hist_count.append(entry[hist_name])
+        else:
+            hist_count.append(0)
+    hist_count = np.asarray(hist_count)
+    # print(hist_count[:5])
+
+    hist, bin_edges = np.histogram(hist_count)
+    # print(hist)
+    # print(bin_edges)
+
+    n, bins, patches = plt.hist(x=hist_count, bins='auto', color='#0504aa',
+                            alpha=0.7, rwidth=0.85)
+                            # rwidth=0.85)
+    plt.grid(axis='y', alpha=0.75)
+    # plt.grid(axis='y')
+    plt.xlabel('Value')
+    plt.ylabel('Frequency')
+    plt.title(hist_name)
+    # plt.text(23, 45, r'$\mu=15, b=3$')
+    maxfreq = n.max()
+    # Set a clean upper y-axis limit.
+    # plt.ylim(ymax=np.ceil(maxfreq / 10) * 10 if maxfreq % 10 else maxfreq + 10)
+    plt.show()
+
+def output_key_entries(dict_count, studies_dict_count):
+    for k, v in dict_count.items():
+        print("{:<30} = {}".format(k, v))
+
+    print("*****************************************")
+
+    for k, v in studies_dict_count.items():
+        print("{:<30} = {}".format(k, v))
+
+    print("*****************************************\n\n")
+ 
 
 def grab_json_file(file_path):
 
