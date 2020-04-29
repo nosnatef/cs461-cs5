@@ -22,16 +22,18 @@ If you want to setup to run the machine learning part either:
 
 A)  pip install json, numpy, matplotlib
 
-    OR
+OR
 
-B)  1. install conda
+B)  
+1. install conda
 
-    2. enter the machine_learning/ folder
+2. enter the machine_learning/ folder
     
-    3. type: conda env create --file environment.yaml
+3. type: conda env create --file environment.yaml
     
-    4. type: conda activate cap_env  
+4. type: conda activate cap_env  
         Note: This env name could possibly be different
-        
-    5. To test the dataset (within machine_learning/ directory) type: python analyze_dataset.py
+
+
+To test the dataset (within machine_learning/ directory) type: python analyze_dataset.py
 
