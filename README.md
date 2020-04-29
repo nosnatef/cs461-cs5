@@ -34,6 +34,16 @@ B)
 4. type: conda activate cap_env  
         Note: This env name could possibly be different
 
-
 To test the dataset (within machine_learning/ directory) type: python analyze_dataset.py
+
+
+If you want to run the Fusion API:
+
+1. Download the Autodesk Fusion 360 and create a account.
+
+2. Click the TOOLS button and then ckick the ADD-INS icon.
+
+3. Create a new py file and use Visual Studio Code onen it, then copy the code into the file.
+
+4. Click the run button.
 
