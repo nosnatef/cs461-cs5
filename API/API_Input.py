@@ -6,7 +6,8 @@ def run(context):
     try:
         app = adsk.core.Application.get()
         ui = app.userInterface
-
+        
+        # Connect to the server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(('3.14.142.108', 1234))
 
@@ -30,7 +31,7 @@ def run(context):
             
             input = retVals[0]
             
-            # Check that a valid length description was entered.
+            # Check that a valid input description was entered.
             unitsMgr = design.unitsManager
             try:
                 realValue = unitsMgr.evaluateExpression(input, unitsMgr.defaultLengthUnits)
@@ -38,26 +39,29 @@ def run(context):
             except:
                 # Invalid expression so display an error and set the flag to allow them
                 # to enter a value again.
-                ui.messageBox('"' + input + '" is not a valid length expression.')
+                ui.messageBox('"' + input + '" is not a valid input expression.')
                 isValid = False
 
-
+        # Send the input to server
         while True:
             sendbuf = input                
             s.send(sendbuf.encode('utf-8'))   
             if not sendbuf or sendbuf == input:   
                 break
-
+        
+        # Receive the feedback
         recvbuf = s.recv(1024)
         ui.messageBox("Finish Connecting")
         s.close()
         
         feed = recvbuf.decode('utf-8')
         
+        # Check if the input is negative
         check = float(feed)
         if check < 0:
             ui.messageBox('Invalid Input')
         else:
+            # Print the result
             ui.messageBox('Feedback:' + feed)
 
             if feed == '0':
