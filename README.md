@@ -19,12 +19,15 @@ The repo is pretty straight forward where different directories represent differ
 1. clone or download the repo and open the directory
 
 If you want to setup to run the machine learning part either:
-2. a. pip install json, numpy, matplotlib
+
+A)  pip install json, numpy, matplotlib
+
     --  OR  --
-2.  install conda
-2.b2  enter the machine_learning/ folder
-2.b3  type: conda env create --file environment.yaml
-2.b4  type: conda activate cap_env  
-           Note: This env name could possibly be different
-2.b5  To test the dataset (within machine_learning/ directory) type: python analyze_dataset.py
+
+B)  i. install conda
+    ii. enter the machine_learning/ folder
+    iii. type: conda env create --file environment.yaml
+    iv. type: conda activate cap_env  
+        Note: This env name could possibly be different
+    v. To test the dataset (within machine_learning/ directory) type: python analyze_dataset.py
 
