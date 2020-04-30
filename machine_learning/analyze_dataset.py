@@ -94,7 +94,7 @@ def grab_longest_key(data, data_key_name):
 
     for key in all_keys:
         if len(key) != len(longest_key):
-            "*Note*: Inconsistent keys in file"
+            print("*Note*: Inconsistent keys in file")
 
     # print(len(longest_key))
     # print(longest_key)
