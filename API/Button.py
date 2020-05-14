@@ -1,70 +1,187 @@
 import adsk.core, adsk.fusion, adsk.cam, traceback
+import socket
 
-_app = adsk.core.Application.cast(None)
-_ui = adsk.core.UserInterface.cast(None)
-
+# Global list to keep all event handlers in scope.
+# This is only needed with Python.
 _handlers = []
 
-_standard = adsk.core.DropDownCommandInput.cast(None)
-
-
 def run(context):
+    ui = None
     try:
-        global _app, _ui
-        _app = adsk.core.Application.get()
-        _ui = _app.userInterface
- 
-        # Get the UserInterface object and the CommandDefinitions collection.
-        cmdDefs = _ui.commandDefinitions
-		 
-        # Create the button command definitions if they don't already exist.
-        # Get the existing command definition or create it if it doesn't already exist.
-        buttonExample = _ui.commandDefinitions.itemById('NewButtonDefId')
-        if not buttonExample:
-            buttonExample = cmdDefs.addButtonDefinition('NewButtonDefId', 'Design time', 'Sample button tooltip', './resources')
+        app = adsk.core.Application.get()
+        ui  = app.userInterface
+
+        # Get the CommandDefinitions collection.
+        cmdDefs = ui.commandDefinitions
+
+        # Create a button command definition.
+        buttonSample = cmdDefs.itemById('NewButtonDefId')
+        if not buttonSample:
+            buttonSample = cmdDefs.addButtonDefinition('NewButtonDefId', 'Design time', 'Design time button tooltip', './resources')
         
-		# Connect to the command created event.
+        # Connect to the command created event.
         onCommandCreated = MyCommandCreatedHandler()
-        buttonExample.commandCreated.add(onCommandCreated)
+        buttonSample.commandCreated.add(onCommandCreated)
         _handlers.append(onCommandCreated)
-
-
-        # Get the MODEL workspace.
-        modelWS = _ui.workspaces.itemById('FusionSolidEnvironment')
         
         # Add a new panel.
-        myPanel = modelWS.toolbarPanels.add('myPanel', 'Design', 'SolidScriptsAddinsPanel', False)
+        modelWS = ui.workspaces.itemById('FusionSolidEnvironment')
+
+        myPanel = modelWS.toolbarPanels.add('MyPanel', 'Design', 'SolidScriptsAddinsPanel', False)
 
         # Add the first button to the panel and make it visible in the panel.
-        buttonControl = myPanel.controls.addCommand(buttonExample)
+        buttonControl = myPanel.controls.addCommand(buttonSample)
         buttonControl.isPromotedByDefault = True
         buttonControl.isPromoted = True
-
-        buttonExample.execute()
-		 
+        
+        # Execute the command.
+        buttonSample.execute()
+        
+        # Keep the script running.
+        adsk.autoTerminate(False)
     except:
-        if _ui:
-            _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
- 
+        if ui:
+            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 
-class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
+class MyCommandDestroyHandler(adsk.core.CommandEventHandler):
     def __init__(self):
         super().__init__()
     def notify(self, args):
         try:
+            eventArgs = adsk.core.CommandEventArgs.cast(args)
 
-            eventArgs = adsk.core.CommandCreatedEventArgs.cast(args)
-            cmd = eventArgs.command
-
-            app = adsk.core.Application.get()
-            ui = app.userInterface
-
-            ui.messageBox("Starting!")
-
-
+            # when the command is done, terminate the script
+            # this will release all globals which will remove all event handlers
+            adsk.terminate()
         except:
-            if _ui:
-                _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+            if ui:
+                ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 
+# Event handler for the commandCreated event.
+class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
+    def __init__(self):
+        super().__init__()
+    def notify(self, args):
+        eventArgs = adsk.core.CommandCreatedEventArgs.cast(args)
+        
+        # Get the command
+        cmd = eventArgs.command
+
+        # Get the CommandInputs collection to create new command inputs.            
+        inputs = cmd.commandInputs
+
+        #tabCmdInput = inputs.addTabCommandInput('user_input', 'User Input')
+
+        #tab1ChildInputs = tabCmdInput1.children
+
+        numInput1 = inputs.addIntegerSpinnerCommandInput('geometries', 'Number of Geometries', 0 , 1000 , 1, 0)
+
+        numInput2 = inputs.addIntegerSpinnerCommandInput('loads', 'Number of Loads', 0 , 1000 , 1, 0)
+
+        numInput3 = inputs.addIntegerSpinnerCommandInput('keep_ins', 'Number of keep_ins', 0 , 1000 , 1, 0)
+
+        numInput4 = inputs.addIntegerSpinnerCommandInput('keep_outs', 'Number of keep_outs', 0 , 1000 , 1, 0)
+
+        # Connect to the execute event.
+        onExecute = MyCommandExecuteHandler()
+        cmd.execute.add(onExecute)
+        _handlers.append(onExecute)
+
+        #onDestroy = MyCommandDestroyHandler()
+        #cmd.destroy.add(onDestroy)
+        #_handlers.append(onDestroy)
+
+
+# Event handler for the execute event. 
+class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
+    def __init__(self):
+        super().__init__()
+    def notify(self, args):
+        import math
+        eventArgs = adsk.core.CommandEventArgs.cast(args)
+
+        app = adsk.core.Application.get()
+        ui  = app.userInterface
+
+        # Get the values from the command inputs. 
+        inputs = eventArgs.command.commandInputs
+
+        num1 = inputs.itemById('geometries').value
+
+        num2 = inputs.itemById('loads').value
+
+        num3 = inputs.itemById('keep_ins').value
+
+        num4 = inputs.itemById('keep_outs').value
+
+        ui.messageBox('In command execute event handler.')
+
+        getFeedback(num1, num2, num3, num4)
+
+
+def getFeedback(num1, num2, num3, num4):
+    ui = None
+    try:
+        app = adsk.core.Application.get()
+        ui  = app.userInterface
+
+        input1 = str(num1)
+        input2 = str(num2)
+        input3 = str(num3)
+        input4 = str(num4)
+
+        ui.messageBox("Starting Connecting!")
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('18.218.162.183', 1234))
+
+        while True:
+            sendbuf = input1                
+            s.send(sendbuf.encode('utf-8'))   
+            if not sendbuf or sendbuf == input1:   
+                break
+        
+        while True:
+            sendbuf = input2                
+            s.send(sendbuf.encode('utf-8'))   
+            if not sendbuf or sendbuf == input2:   
+                break
+        
+        while True:
+            sendbuf = input3                
+            s.send(sendbuf.encode('utf-8'))   
+            if not sendbuf or sendbuf == input3:   
+                break
+        
+        while True:
+            sendbuf = input4                
+            s.send(sendbuf.encode('utf-8'))   
+            if not sendbuf or sendbuf == input4:   
+                break
+
+        recvbuf = s.recv(1024)
+        s.close()
+
+        ui.messageBox("Finish Connecting")
+
+        ui.messageBox('Feedback:' + recvbuf)
+
+        check = int(recvbuf)
+
+        if check < 0:
+            ui.messageBox('Invalid Input')
+        else:
+            if recvbuf == '0':
+                ui.messageBox('Short time frame')
+        
+            if recvbuf == '1':
+                ui.messageBox('Medium time frame')
+
+            if recvbuf == '2':
+                ui.messageBox('Long time frame')
+
+    except:
+        if ui:
+            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
