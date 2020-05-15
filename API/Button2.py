@@ -1,5 +1,5 @@
 import adsk.core, adsk.fusion, adsk.cam, traceback
-import socket
+import socket, json
 
 # Global list to keep all event handlers in scope.
 # This is only needed with Python.
@@ -127,41 +127,19 @@ def getFeedback(num1, num2, num3, num4):
         app = adsk.core.Application.get()
         ui  = app.userInterface
 
-        input1 = str(num1)
-        input2 = str(num2)
-        input3 = str(num3)
-        input4 = str(num4)
+        inputlist = [num1, num2, num3, num4]
+
+        json_str = json.dumps(inputlist)
 
         ui.messageBox("Starting Connecting!")
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(('18.218.162.183', 1234))
-
-        while True:
-            sendbuf = input1                
-            s.send(sendbuf.encode('utf-8'))   
-            if not sendbuf or sendbuf == input1:   
-                break
-        
-        while True:
-            sendbuf = input2                
-            s.send(sendbuf.encode('utf-8'))   
-            if not sendbuf or sendbuf == input2:   
-                break
-        
-        while True:
-            sendbuf = input3                
-            s.send(sendbuf.encode('utf-8'))   
-            if not sendbuf or sendbuf == input3:   
-                break
-        
-        while True:
-            sendbuf = input4                
-            s.send(sendbuf.encode('utf-8'))   
-            if not sendbuf or sendbuf == input4:   
-                break
+            
+        s.send(json_str.encode('utf-8'))   
 
         recvbuf = s.recv(1024)
+
         s.close()
 
         ui.messageBox("Finish Connecting")
@@ -185,3 +163,4 @@ def getFeedback(num1, num2, num3, num4):
     except:
         if ui:
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+
