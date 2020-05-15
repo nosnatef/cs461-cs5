@@ -24,11 +24,15 @@ def main():
     ### voxels seems promising
     # entry = ['voxels']
     # entry_name = 'test'
-    entry = ['number_of_keep_outs', 'number_of_loads', 'number_of_geometries', 'number_of_keep_ins']
-    entry_name = 'classify_four_v2'
+    study_entries = ['number_of_keep_outs', 'number_of_loads', 'number_of_geometries', 'number_of_keep_ins']
+    solve_entries = ['voxels']
+    entry = {'study': study_entries,
+             'solve': solve_entries}
 
-    dataset = generate_dataset(studies_data, solvetime_data, name = 'study', entry = entry, file_path = 'data')
-    # dataset = generate_dataset(solve_data, solvetime_data, name = 'solve', entry = entry, file_path = 'data')
+    entry_name = 'combined'
+    print(entry)
+
+    dataset = generate_dataset(studies_data, solve_data, solvetime_data, entry = entry, file_path = 'data')
 
     dataset = classify_solvetimes(dataset)
 
@@ -122,37 +126,136 @@ def new_data(old_data, key_name):
  
     return data, name
 
-
-def generate_dataset(x_data, y_data, name, entry, file_path):
-
-    entry_names = entry
+def generate_dataset(x_studies_data, x_solves_data, y_data, entry, file_path):
+    entry_names = []
+    entry_names.extend(entry['study'])
+    entry_names.extend(entry['solve'])
     entry_names.append('time')
     print(entry_names)
-    dataset = []
-    dataset.append(entry_names)
+    study_dataset = []
 
-    if name == 'solve':
-        match_id = 'solver_study_id'
-    else:
-        match_id = 'id'
+    for x_study_entry in x_studies_data['study']:
+        id_study_obj = x_study_entry['id']
 
-    for x_entry in x_data[name]:
         group = []
         for y_entry in y_data:
-            if x_entry[match_id] == y_entry[0]:
-                for entry_name in entry:
-                    if entry_name in x_entry:
-                        if entry_name == "voxels":
-                            group.append(math.log(x_entry[entry_name]))
-                        else:
-                            group.append(x_entry[entry_name])
-                
+            if id_study_obj == y_entry[0]:
+                group.append(id_study_obj)
+                for study_entry_name in entry['study']:
+                    group.append(x_study_entry[study_entry_name])
                 group.append(y_entry[1])
-        if len(group) > 1:
-            dataset.append(group)
+                break
 
-    print(dataset)
-    return dataset
+        if len(group) == len(entry['study']) + 2:
+            study_dataset.append(group)
+        # else:
+        #     print("WOWOW")
+
+    solve_dataset = []
+    # solve_dataset.append(entry_names)
+
+    for x_solve_entry in x_solves_data['solve']:
+        if x_solve_entry['solver_study_status'] == "DONE" and 'voxels' in  x_solve_entry:
+            id_solve_obj = x_solve_entry['solver_study_id']
+
+            group = []
+            for y_entry in y_data:
+                if id_solve_obj == y_entry[0]:
+                    group.append(id_solve_obj)
+                    for solve_entry_name in entry['solve']:
+                        group.append(round(math.log(x_solve_entry[solve_entry_name]), 5))
+            if len(group) == len(entry['solve']) + 1:
+                solve_dataset.append(group)
+
+    true_dataset = []
+    true_dataset.append(entry_names)
+
+    for study_entry in study_dataset:
+        group = []
+        for solve_entry in solve_dataset:
+            if study_entry[0] == solve_entry[0]:
+                group.extend(study_entry[1:-1])
+                group.append(solve_entry[-1])
+                group.append(study_entry[-1])
+                true_dataset.append(group)
+
+    # for i in true_dataset[1:]:
+    #     obj_id = i[0]
+    #     count = 0
+    #     for j in true_dataset:
+    #         other_obj_id = j[0]
+    #         if obj_id == other_obj_id:
+    #             count += 1
+    #             if count > 1:
+    #                 print("FUDGYWUDGY")
+    
+    # print(true_dataset)
+
+
+
+
+#########################################################
+                    # for study_entry in study_dataset:
+                    #     if id_solve_obj == study_entry[0]:
+                    #         for solve_entry_name in entry['solve']:
+                    #             # if solve_entry_name == "voxels":
+                    #                 # print(x_solve_entry)
+                    #             group.append(round(math.log(x_solve_entry[solve_entry_name]), 5))
+                    #         # else:
+                    #     #     group.append(x_solve_entry[solve_entry_name])
+
+                    # if len(group) == len(entry['solve']):
+                    #     truth = []
+                    #     truth.extend(study_entry[:-1])
+                    #     truth.extend(group)
+                    #     truth.append(study_entry[-1])
+                    #     true_dataset.append(truth)
+########################################################
+                    # print(x_solve_entry)
+            # print(true_dataset)
+        # else:
+        #     print("wowowow")
+        # count += 1
+        # if count == 50:
+        #     break
+
+    print("################")
+    # print(true_dataset)
+    # print(study_dataset)
+    # print(solve_dataset)
+
+    return true_dataset
+
+# def generate_dataset(x_data, y_data, name, entry, file_path):
+
+    # entry_names = entry
+    # entry_names.append('time')
+    # print(entry_names)
+    # dataset = []
+    # dataset.append(entry_names)
+
+    # if name == 'solve':
+    #     match_id = 'solver_study_id'
+    # else:
+    #     match_id = 'id'
+
+    # for x_entry in x_data[name]:
+    #     group = []
+    #     for y_entry in y_data:
+    #         if x_entry[match_id] == y_entry[0]:
+    #             for entry_name in entry:
+    #                 if entry_name in x_entry:
+    #                     if entry_name == "voxels":
+    #                         group.append(math.log(x_entry[entry_name]))
+    #                     else:
+    #                         group.append(x_entry[entry_name])
+                
+    #             group.append(y_entry[1])
+    #     if len(group) > 1:
+    #         dataset.append(group)
+
+    # print(dataset)
+    # return dataset
 
 def write_dataset_to_file(dataset, entry_name):
 

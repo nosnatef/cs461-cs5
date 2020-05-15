@@ -2,7 +2,7 @@ import pandas as pd
 import seaborn as sns
 import csv
 import numpy as np
-from tqdm import tqdm
+from tqdm import tqdm, trange
 
 import torch
 import torch.nn as nn
@@ -12,6 +12,13 @@ from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from sklearn.preprocessing import MinMaxScaler 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.utils import resample
+from collections import OrderedDict
+
+from sklearn.metrics import roc_auc_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn import metrics
 
 # from models.linear_regression_model import *
 # from models.multi_class_model import *
@@ -36,16 +43,39 @@ def main():
     # name = 'number_of_geometries_dataset'
     # name = 'four_dataset'
     # name = 'classify_four_normalized_dataset'
-    name = 'classify_four_v2_dataset'
+    # name = 'classify_four_v2_dataset'
+    name = 'combined_dataset'
     # entry = name + '.p'
     entry = name + '.csv'
 
     # with open ('data/' + entry, 'rb') as fp:
     #     dataset = pickle.load(fp) 
-    df = pd.read_csv("data/classify_four_v2_dataset.csv")
+    # df_unbalanced = pd.read_csv("data/classify_four_v2_dataset.csv")
+    df_unbalanced = pd.read_csv("data/combined_dataset.csv")
  
     # print(dataset.shape)
     # print(dataset)
+    print(df_unbalanced.head())
+    df_short = df_unbalanced.loc[df_unbalanced['time'] == 0]
+    df_med = df_unbalanced.loc[df_unbalanced['time'] == 1]
+    df_long = df_unbalanced.loc[df_unbalanced['time'] == 2]
+    print("short entries: {}".format(len(df_short)))
+    print("medium entries: {}".format(len(df_med)))
+    print("long entries: {}".format(len(df_long)))
+    print("*****")
+
+    df_short_downsampled = resample(df_short, replace=False, n_samples=102, random_state=333)
+    # df_med_upsampled = resample(df_med, replace=True, n_samples=551, random_state=933)
+    df_long_upsampled = resample(df_long, replace=True, n_samples=102, random_state=432)
+
+    print("new short entries: {}".format(len(df_short_downsampled)))
+    print("new medium entries: {}".format(len(df_med)))
+    print("new long entries: {}".format(len(df_long_upsampled)))
+    print("*****")
+
+    df = pd.concat([df_short_downsampled, df_med, df_long_upsampled])
+    df = df.sample(frac=1).reset_index(drop=True)
+
     print(df.head())
 
     ## Split data into relevant training and testing sets
@@ -136,16 +166,25 @@ def main():
     print(model)
 
     ## Dictionaries to help keep track of accuracy and loss for each epoch
-    accuracy_stats = {
-        'train': [],
-        'val': []
-    }
-    loss_stats = {
-        'train': [],
-        'val': []
-    }
+    # accuracy_stats = {
+    #     'train': [],
+    #     'val': []
+    # }
+    # loss_stats = {
+    #     'train': [],
+    #     'val': []
+    # }
+    training_info = OrderedDict()
+    training_info['epoch'] = 0
+    training_info['acc_train'] = []
+    training_info['acc_val'] = []
+    training_info['loss_train'] = []
+    training_info['loss_val'] = []
 
-    for e in tqdm(range(1, EPOCHS+1)):
+    ############################################################################################################
+    t = trange(1, EPOCHS+1, desc='ML')
+    # for e in tqdm(range(1, EPOCHS+1)):
+    for e in t:
         train_epoch_loss = 0
         train_epoch_acc = 0
 
@@ -181,14 +220,69 @@ def main():
             val_epoch_loss += val_loss.item()
             val_epoch_acc += val_acc.item()
 
-        loss_stats['train'].append(train_epoch_loss/len(train_loader))
-        loss_stats['val'].append(val_epoch_loss/len(val_loader))
-        accuracy_stats['train'].append(train_epoch_acc/len(train_loader))
-        accuracy_stats['val'].append(val_epoch_acc/len(val_loader))
+            loss_train = round(train_epoch_loss/len(train_loader), 5)
+            loss_val = round(val_epoch_loss/len(train_loader), 5)
+            acc_train = round(train_epoch_acc/len(train_loader), 3)
+            acc_val = round(val_epoch_acc/len(val_loader), 3)
+            training_info['epoch'] = e
+            training_info['loss_train'].append(loss_train)
+            training_info['loss_val'].append(loss_val)
+            training_info['acc_train'].append(acc_train)
+            training_info['acc_val'].append(acc_val)
 
-        print("Epoch {:03}: | Train Loss: {:.5f} | Val Loss: {:.5f} | Train Acc: {:.3f} | Val Acc: {:.3f}"
-        .format(e, train_epoch_loss/len(train_loader), val_epoch_loss/len(train_loader),
-                   train_epoch_acc/len(train_loader), val_epoch_acc/len(train_loader)))
+            t.set_description("Epochs: {:03} | Train Loss: {:.5f} | Val Loss: {:.5f} | Train Acc: {:.3f} | Val Acc: {:.3f}\n".format(e, 
+                                loss_train, loss_val, acc_train, acc_val))
+
+        # loss_stats['train'].append(train_epoch_loss/len(train_loader))
+        # loss_stats['val'].append(val_epoch_loss/len(val_loader))
+        # accuracy_stats['train'].append(train_epoch_acc/len(train_loader))
+        # accuracy_stats['val'].append(val_epoch_acc/len(val_loader))
+
+    # print("Epoch {:03}: | Train Loss: {:.5f} | Val Loss: {:.5f} | Train Acc: {:.3f} | Val Acc: {:.3f}"
+    # .format(e, train_epoch_loss/len(train_loader), val_epoch_loss/len(train_loader),
+    #         train_epoch_acc/len(train_loader), val_epoch_acc/len(train_loader)))
+
+    # Test the model
+    y_pred_list = []
+    with torch.no_grad():
+        model.eval()
+        for X_batch, _ in test_loader:
+            X_batch = X_batch.to(device)
+            y_test_pred = model(X_batch)
+            y_pred_softmax = torch.log_softmax(y_test_pred, dim = 1)
+            _, y_pred_tags = torch.max(y_pred_softmax, dim = 1)
+            y_pred_list.append(y_pred_tags.cpu().numpy())
+
+    y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
+            
+    print(classification_report(y_test, y_pred_list))
+    ######################################################################################################################
+    # print("SVC TIME")
+    # clf_2 = SVC(kernel='linear', class_weight='balanced', probability=True)
+    # clf_2.fit(x_train, y_train)
+    # y_svc_pred = clf_2.predict(x_test)
+    # print(y_svc_pred)
+    # print("Accuracy:", metrics.accuracy_score(y_test, y_svc_pred))
+
+    # print("************************************")
+
+    print("RANDOME FORSET TIME")
+    clf = RandomForestClassifier(n_estimators=100)
+    clf.fit(x_train, y_train)
+
+    feature_imp = pd.Series(clf.feature_importances_,index=df.columns[:-1]).sort_values(ascending=False)
+    print("feature importance:")
+    print(feature_imp)
+
+    y_forest_pred = clf.predict(x_val)
+    print(y_forest_pred)
+    print("Accuracy:", metrics.accuracy_score(y_val, y_forest_pred))
+
+    # prob_forest = clf.predict_proba(x_test)
+    # prob_forest = [p[1] for p in prob_forest]
+    # print("AUROC: ", )
+
+
 
     # ## Train the model
     # for epoch in range(1000):
