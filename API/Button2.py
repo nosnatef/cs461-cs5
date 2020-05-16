@@ -79,12 +79,14 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
         numInput1 = inputs.addIntegerSpinnerCommandInput('geometries', 'Number of Geometries', 0 , 1000 , 1, 0)
 
         numInput2 = inputs.addIntegerSpinnerCommandInput('loads', 'Number of Loads', 0 , 1000 , 1, 0)
-
-        numInput3 = inputs.addIntegerSpinnerCommandInput('keep_ins', 'Number of keep_ins', 0 , 1000 , 1, 0)
-
-        numInput4 = inputs.addIntegerSpinnerCommandInput('keep_outs', 'Number of keep_outs', 0 , 1000 , 1, 0)
         
-        numInput5 = inputs.addIntegerSpinnerCommandInput('voxels', 'Number of voxels', 0 , 10000000000 , 1, 0)
+        numInput3 = inputs.addIntegerSpinnerCommandInput('load_cases', 'Number of load_cases', 0 , 1000 , 1, 0)
+
+        numInput4 = inputs.addIntegerSpinnerCommandInput('keep_ins', 'Number of keep_ins', 0 , 1000 , 1, 0)
+
+        numInput5 = inputs.addIntegerSpinnerCommandInput('keep_outs', 'Number of keep_outs', 0 , 1000 , 1, 0)
+        
+        numInput6 = inputs.addIntegerSpinnerCommandInput('voxels', 'Number of voxels', 0 , 10000000000 , 1, 0)
 
         # Connect to the execute event.
         onExecute = MyCommandExecuteHandler()
@@ -114,24 +116,26 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
 
         num2 = inputs.itemById('loads').value
 
-        num3 = inputs.itemById('keep_ins').value
+        num3 = inputs.itemById('load_cases').value
 
-        num4 = inputs.itemById('keep_outs').value
+        num4 = inputs.itemById('keep_ins').value
         
-        num5 = inputs.itemById('voxels').value
+        num5 = inputs.itemById('keep_outs').value
+        
+        num6 = inputs.itemById('voxels').value
 
         ui.messageBox('In command execute event handler.')
 
-        getFeedback(num1, num2, num3, num4, num5)
+        getFeedback(num1, num2, num3, num4, num5, num6)
 
 
-def getFeedback(num1, num2, num3, num4, num5):
+def getFeedback(num1, num2, num3, num4, num5, num6):
     ui = None
     try:
         app = adsk.core.Application.get()
         ui  = app.userInterface
 
-        inputlist = [num1, num2, num3, num4, num5]
+        inputlist = [num1, num2, num3, num4, num5, num6]
 
         json_str = json.dumps(inputlist)
 
