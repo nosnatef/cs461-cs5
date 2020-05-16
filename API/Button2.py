@@ -151,21 +151,23 @@ def getFeedback(num1, num2, num3, num4, num5, num6):
         s.close()
 
         ui.messageBox("Finish Connecting")
+        
+        feedback = recvbuf.decode('utf-8')
 
-        ui.messageBox('Feedback:' + recvbuf)
+        ui.messageBox('Feedback:' + feedback)
 
-        check = int(recvbuf)
+        check = int(feedback)
 
         if check < 0:
             ui.messageBox('Invalid Input')
         else:
-            if recvbuf == '0':
+            if feedback == '0':
                 ui.messageBox('Short time frame')
         
-            if recvbuf == '1':
+            if feedback == '1':
                 ui.messageBox('Medium time frame')
 
-            if recvbuf == '2':
+            if feedback == '2':
                 ui.messageBox('Long time frame')
 
     except:
