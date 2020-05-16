@@ -10,8 +10,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind(('0.0.0.0', 1234))
 s.listen(5)
 
-pickle.loads()
-with open ('random_forest_classifier', 'rb') as fp:
+with open ('random_forest_classifier.p', 'rb') as fp:
     random_forest_model = pickle.load(fp)
 
 while True:
