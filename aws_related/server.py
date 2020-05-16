@@ -1,6 +1,7 @@
 import socket
 import time
 import pickle
+import json
 
 # from load_model import *
 
@@ -24,6 +25,7 @@ while True:
             break
         print("Data: %s, Size: %s" % (data.decode('utf-8'), len(data)))
         decoded_data = float(data.decode('utf-8'))
+        decoded_data = json.load(decoded_data)
         # prediction_data = output_prediction(decoded_data)
         prediction_data = random_forest_model.predict(decoded_data)
         clientsocket.send(str(prediction_data))
