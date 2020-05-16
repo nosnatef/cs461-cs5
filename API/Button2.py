@@ -83,6 +83,8 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
         numInput3 = inputs.addIntegerSpinnerCommandInput('keep_ins', 'Number of keep_ins', 0 , 1000 , 1, 0)
 
         numInput4 = inputs.addIntegerSpinnerCommandInput('keep_outs', 'Number of keep_outs', 0 , 1000 , 1, 0)
+        
+        numInput5 = inputs.addIntegerSpinnerCommandInput('voxels', 'Number of voxels', 0 , 10000000000 , 1, 0)
 
         # Connect to the execute event.
         onExecute = MyCommandExecuteHandler()
@@ -115,19 +117,21 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
         num3 = inputs.itemById('keep_ins').value
 
         num4 = inputs.itemById('keep_outs').value
+        
+        num5 = inputs.itemById('voxels').value
 
         ui.messageBox('In command execute event handler.')
 
-        getFeedback(num1, num2, num3, num4)
+        getFeedback(num1, num2, num3, num4, num5)
 
 
-def getFeedback(num1, num2, num3, num4):
+def getFeedback(num1, num2, num3, num4, num5):
     ui = None
     try:
         app = adsk.core.Application.get()
         ui  = app.userInterface
 
-        inputlist = [num1, num2, num3, num4]
+        inputlist = [num1, num2, num3, num4, num5]
 
         json_str = json.dumps(inputlist)
 
