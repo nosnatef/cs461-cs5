@@ -1,5 +1,5 @@
 import adsk.core, adsk.fusion, adsk.cam, traceback
-import socket, json
+import socket, json, math
 
 from config import ip_address
 
@@ -125,19 +125,21 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
         num5 = inputs.itemById('keep_outs').value
         
         num6 = inputs.itemById('voxels').value
+        
+        num7 = round(math.log(num6, 5))
 
         ui.messageBox('In command execute event handler.')
 
-        getFeedback(num1, num2, num3, num4, num5, num6)
+        getFeedback(num1, num2, num3, num4, num5, num7)
 
 
-def getFeedback(num1, num2, num3, num4, num5, num6):
+def getFeedback(num1, num2, num3, num4, num5, num7):
     ui = None
     try:
         app = adsk.core.Application.get()
         ui  = app.userInterface
 
-        inputlist = [num1, num2, num3, num4, num5, num6]
+        inputlist = [num1, num2, num3, num4, num5, num7]
 
         json_str = json.dumps(inputlist)
 
