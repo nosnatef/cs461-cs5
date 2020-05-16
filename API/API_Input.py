@@ -1,5 +1,6 @@
 import adsk.core, adsk.fusion, traceback
 import socket
+from config import ip_address
 
 def run(context):
     ui = None
@@ -9,7 +10,7 @@ def run(context):
         
         # Connect to the server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(('3.14.142.108', 1234))
+        s.connect((ip_address, 1234))
 
         ui.messageBox("Starting Connecting!")
 

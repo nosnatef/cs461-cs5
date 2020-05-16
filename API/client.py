@@ -3,6 +3,7 @@
 
 import adsk.core, adsk.fusion, adsk.cam, traceback
 import socket
+from config import ip_address
 
 def run(context):
     ui = None
@@ -11,7 +12,7 @@ def run(context):
         ui  = app.userInterface
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(('3.14.246.112', 1234))
+        s.connect((ip_address, 1234))
 
         ui.messageBox("starting")
 

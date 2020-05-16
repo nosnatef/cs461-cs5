@@ -1,6 +1,8 @@
 import adsk.core, adsk.fusion, adsk.cam, traceback
 import socket
 
+from config import ip_address
+
 # Global list to keep all event handlers in scope.
 # This is only needed with Python.
 _handlers = []
@@ -135,7 +137,7 @@ def getFeedback(num1, num2, num3, num4):
         ui.messageBox("Starting Connecting!")
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(('18.218.162.183', 1234))
+        s.connect((ip_address, 1234))
 
         while True:
             sendbuf = input1                
