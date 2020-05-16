@@ -8,6 +8,8 @@ import csv
 
 
 
+# This function loads in the data and then goes through it to grab the entries that are relevenat to train on for the model
+# basically compiling the dataset that the machine learning model will train on
 def main():
 
     raw_solves_data = grab_json_file('data/filteredSolves.json')
@@ -61,6 +63,9 @@ def main():
     # print(itemlist)
     # print(itemlist.shape)
 
+# classify_solvetimes - goes through the time entries and transforms them into the label assiocated with that time frame
+#                       short = 0-2hours, medium = 2-7hours, long = 7+ hours
+#   dataset - the dataset that is being manipulated and transformed
 def classify_solvetimes(dataset):
     count_of_short = 0
     count_of_med   = 0
@@ -95,6 +100,7 @@ def classify_solvetimes(dataset):
     return dataset
 
 
+# normalized - function that was normalizing the inputs but not really using anymore. Basically divide all inputs by avg.
 def normalize(dataset):
     # print(dataset)
     max_list = np.amax(dataset, axis=0)
@@ -105,6 +111,7 @@ def normalize(dataset):
     new_dataset = np.around(new_dataset, 3)
     return new_dataset
 
+# new_data - just takes in a json dataset and converts it into a python dictionary
 def new_data(old_data, key_name):
     data = {}
     name = ''
@@ -126,6 +133,12 @@ def new_data(old_data, key_name):
  
     return data, name
 
+# generate_dataset - takes in the new datasets and compiles everything into the true dataset that the model will learn on
+#   x_studies_data - the dictionary dataset from the studies dataset
+#   x_solved_data - the dictionary dataset form the solves dataset
+#   y_data - the time entries from the solveTimes.txt dataset
+#   entry - the entry_names that we want to extract from each dataset
+#   file_path - where the file will be saved and called
 def generate_dataset(x_studies_data, x_solves_data, y_data, entry, file_path):
     entry_names = []
     entry_names.extend(entry['study'])
@@ -257,6 +270,9 @@ def generate_dataset(x_studies_data, x_solves_data, y_data, entry, file_path):
     # print(dataset)
     # return dataset
 
+# write_dataset_to_file - basically saves off the dataset being passed in
+#   dataset - what data is being saved
+#   entry_names - what the file will be called
 def write_dataset_to_file(dataset, entry_name):
 
     # with open('data/dataset.txt', 'w+') as f:
@@ -272,6 +288,7 @@ def write_dataset_to_file(dataset, entry_name):
         writer.writerows(dataset)
 
 
+# grab_json_file - from the file_path just load the json data and return it
 def grab_json_file(file_path):
 
     with open(file_path, 'r', encoding='utf8', errors='ignore') as json_file:
@@ -279,6 +296,8 @@ def grab_json_file(file_path):
     
     return data
  
+ # grab_solvetimes_file - as states from file_path grabs and loads in the solve_times data
+ #                        is slightly trimmed and modified to get more realistic values
 def grab_solvetimes_file(file_path):
 
     solve_file = open(file_path, "r")

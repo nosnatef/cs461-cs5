@@ -20,17 +20,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-
+# The main function will grab all the json files, put them into datasets, and then be analyzed thereafter with other functions
 def main():
 
+    # grabbing the datasets
     all_data = grab_json_file('data/filteredSolves.json')
 
     studies = grab_json_file('data/filteredStudies.json')
 
+    # Transforming the datasets to produce a new dataset that is sound and of the correct data type
     data, data_key_name = new_data(all_data, 'final_iteration')
 
     studies_data, studies_data_key_name = new_data(studies)
 
+    # Key entries in the dataset are sometimes inconsistant so this is to check for those entries
     longest_key = grab_longest_key(data, data_key_name)
 
     longest_studies_key = grab_longest_key(studies_data, studies_data_key_name)
@@ -45,6 +48,9 @@ def main():
 
     unit_test_dataset()
     
+# unit_test_dataset - 
+#   Takes in no inputes simply checks to make sure that the dataset that was saved off is sound by making sure
+#   certain elements are not too large or different from the data type they are expected to be
 def unit_test_dataset():
     # name = 'number_of_loads_dataset'
     # name = 'number_of_geometries_dataset'
@@ -67,7 +73,10 @@ def unit_test_dataset():
 
 
 
-
+# count_key_entries - takes the key_entries and checks to see how many entries are inconsistant with the longest key
+#   data - the dataset being passed in containing the values
+#   data_key_name - the key names of the dataset
+#   longest_key - the longest key found out of all the keys and is what is checked against
 def count_key_entries(data, data_key_name, longest_key):
     dict_count = {}
     for key in longest_key:
@@ -81,6 +90,9 @@ def count_key_entries(data, data_key_name, longest_key):
     return dict_count
  
 
+# grab_longest_key - grabs the longest key out of the dataset provided
+#   data - the dataset being analyzed
+#   data_key_name - the key_names associated with the dataset
 def grab_longest_key(data, data_key_name):
     all_keys = []
     for entry in data[data_key_name]:
@@ -100,6 +112,9 @@ def grab_longest_key(data, data_key_name):
     # print(longest_key)
     return longest_key
 
+# new_data - transforms the dataset from json to a dictionary
+#   old_data - the json data
+#   key_name - what key_name is associated with old_data
 def new_data(old_data, key_name=''):
     data = {}
     name = ''
@@ -120,6 +135,9 @@ def new_data(old_data, key_name=''):
  
     return data, name
 
+# see_graph - outputs the histogram view of a certain entry in the dataset. 
+#             Helping determine what is frequent in the dataset and what is not
+#   data - the data being analyzed for the histogram
 def see_graph(data):
     # analysis of keep_in, keep_outs, # of geometries, # of loads
     hist_count = []
@@ -151,6 +169,9 @@ def see_graph(data):
     # plt.ylim(ymax=np.ceil(maxfreq / 10) * 10 if maxfreq % 10 else maxfreq + 10)
     plt.show()
 
+# output_key_entries - just outputs a list of all the entries that have been seen for each dictionary
+#   dict_count - the counts of the key entries found earlier for the solve dataset
+#   studies_dict_count - the counts of the key entries for the study dataset
 def output_key_entries(dict_count, studies_dict_count):
     for k, v in dict_count.items():
         print("{:<30} = {}".format(k, v))
@@ -163,6 +184,8 @@ def output_key_entries(dict_count, studies_dict_count):
     print("*****************************************\n\n")
  
 
+# grab_json_fil - just grabs a json file and loads it in then returns that file
+#   file_path - path to the file wanting to load
 def grab_json_file(file_path):
 
     with open(file_path, 'r', encoding='utf8', errors='ignore') as json_file:
