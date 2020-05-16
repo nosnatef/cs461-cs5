@@ -1,7 +1,9 @@
 import adsk.core, adsk.fusion, adsk.cam, traceback
-import socket, json, math
+import socket 
+import json 
+import math
 
-from config import ip_address
+#from config import ip_address
 
 # Global list to keep all event handlers in scope.
 # This is only needed with Python.
@@ -57,8 +59,8 @@ class MyCommandDestroyHandler(adsk.core.CommandEventHandler):
             # this will release all globals which will remove all event handlers
             adsk.terminate()
         except:
-            if ui:
-                ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+            if _ui:
+                _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 
 # Event handler for the commandCreated event.
@@ -74,10 +76,6 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
         # Get the CommandInputs collection to create new command inputs.            
         inputs = cmd.commandInputs
 
-        #tabCmdInput = inputs.addTabCommandInput('user_input', 'User Input')
-
-        #tab1ChildInputs = tabCmdInput1.children
-
         numInput1 = inputs.addIntegerSpinnerCommandInput('geometries', 'Number of Geometries', 0 , 1000 , 1, 0)
 
         numInput2 = inputs.addIntegerSpinnerCommandInput('loads', 'Number of Loads', 0 , 1000 , 1, 0)
@@ -88,17 +86,12 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
 
         numInput5 = inputs.addIntegerSpinnerCommandInput('keep_outs', 'Number of keep_outs', 0 , 1000 , 1, 0)
         
-        numInput6 = inputs.addIntegerSpinnerCommandInput('voxels', 'Number of voxels', 0 , 10000000000 , 1, 0)
+        numInput6 = inputs.addFloatSpinnerCommandInput('voxels', 'Number of voxels', '', 0 , 100000000, 1, 0)
 
         # Connect to the execute event.
         onExecute = MyCommandExecuteHandler()
         cmd.execute.add(onExecute)
         _handlers.append(onExecute)
-
-        #onDestroy = MyCommandDestroyHandler()
-        #cmd.destroy.add(onDestroy)
-        #_handlers.append(onDestroy)
-
 
 # Event handler for the execute event. 
 class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
@@ -126,30 +119,36 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
         
         num6 = inputs.itemById('voxels').value
         
+        # Log the voxels
         num7 = round(math.log(num6, 5))
 
         ui.messageBox('In command execute event handler.')
 
-        getFeedback(num1, num2, num3, num4, num5, num7)
+        # Call the getFeedback function
+        getFeedback(num1, num2, num3, num4, num5, num6, num7)
 
 
-def getFeedback(num1, num2, num3, num4, num5, num7):
+def getFeedback(num1, num2, num3, num4, num5, num6, num7):
     ui = None
     try:
         app = adsk.core.Application.get()
         ui  = app.userInterface
 
-        inputlist = [num1, num2, num3, num4, num5, num7]
+        # Create a input array
+        inputlist = [num1, num2, num3, num4, num5, num6]
 
         json_str = json.dumps(inputlist)
 
         ui.messageBox("Starting Connecting!")
 
+        # Connect to the server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((ip_address, 1234))
-            
-        s.send(json_str.encode('utf-8'))   
+        s.connect(('50.201.138.18', 1234))
+        
+        # Send the array to server
+        s.send(json_str)   
 
+        # Get the feedback for server
         recvbuf = s.recv(1024)
 
         s.close()
@@ -159,11 +158,13 @@ def getFeedback(num1, num2, num3, num4, num5, num7):
         feedback = recvbuf.decode('utf-8')
 
         ui.messageBox('Feedback:' + feedback)
-
+        
+        # Convert string to int
         check = int(feedback)
 
+        # Print the result
         if check < 0:
-            ui.messageBox('Invalid Input')
+            ui.messageBox('Invalid message')
         else:
             if feedback == '0':
                 ui.messageBox('Short time frame')
@@ -177,4 +178,3 @@ def getFeedback(num1, num2, num3, num4, num5, num7):
     except:
         if ui:
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
-
