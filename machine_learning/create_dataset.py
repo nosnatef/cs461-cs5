@@ -24,12 +24,12 @@ def main():
     ### voxels seems promising
     # entry = ['voxels']
     # entry_name = 'test'
-    study_entries = ['number_of_keep_outs', 'number_of_loads', 'number_of_geometries', 'number_of_keep_ins']
+    study_entries = ['number_of_keep_outs', 'number_of_loads', 'number_of_load_cases', 'number_of_geometries', 'number_of_keep_ins']
     solve_entries = ['voxels']
     entry = {'study': study_entries,
              'solve': solve_entries}
 
-    entry_name = 'combined'
+    entry_name = 'combined_v3'
     print(entry)
 
     dataset = generate_dataset(studies_data, solve_data, solvetime_data, entry = entry, file_path = 'data')
@@ -155,7 +155,7 @@ def generate_dataset(x_studies_data, x_solves_data, y_data, entry, file_path):
     # solve_dataset.append(entry_names)
 
     for x_solve_entry in x_solves_data['solve']:
-        if x_solve_entry['solver_study_status'] == "DONE" and 'voxels' in  x_solve_entry:
+        if x_solve_entry['solver_study_status'] == "DONE" and 'voxels' in  x_solve_entry and x_solve_entry['manufacturing_method'] != "Frame":
             id_solve_obj = x_solve_entry['solver_study_id']
 
             group = []
