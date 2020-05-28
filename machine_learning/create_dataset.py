@@ -26,12 +26,12 @@ def main():
     ### voxels seems promising
     # entry = ['voxels']
     # entry_name = 'test'
-    study_entries = ['number_of_keep_outs', 'number_of_loads', 'number_of_load_cases', 'number_of_geometries', 'number_of_keep_ins']
+    study_entries = ['number_of_geometries', 'number_of_loads', 'number_of_load_cases', 'number_of_keep_ins', 'number_of_keep_outs']
     solve_entries = ['voxels']
     entry = {'study': study_entries,
              'solve': solve_entries}
 
-    entry_name = 'combined_v3'
+    entry_name = 'combined_v2'
     print(entry)
 
     dataset = generate_dataset(studies_data, solve_data, solvetime_data, entry = entry, file_path = 'data')
@@ -176,7 +176,9 @@ def generate_dataset(x_studies_data, x_solves_data, y_data, entry, file_path):
                 if id_solve_obj == y_entry[0]:
                     group.append(id_solve_obj)
                     for solve_entry_name in entry['solve']:
-                        group.append(round(math.log(x_solve_entry[solve_entry_name]), 5))
+                        group.append(round(math.log10(x_solve_entry[solve_entry_name]), 5))
+                        print("before logged: ", x_solve_entry[solve_entry_name])
+                        print("logged voxels: ", round(math.log10(x_solve_entry[solve_entry_name]), 5))
             if len(group) == len(entry['solve']) + 1:
                 solve_dataset.append(group)
 
