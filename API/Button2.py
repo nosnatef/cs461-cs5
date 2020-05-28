@@ -76,17 +76,17 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
         # Get the CommandInputs collection to create new command inputs.            
         inputs = cmd.commandInputs
 
-        numInput1 = inputs.addIntegerSpinnerCommandInput('geometries', 'Number of Geometries', 0 , 1000 , 1, 1)
+        numInput1 = inputs.addIntegerSpinnerCommandInput('geometries', 'Number of Geometries', 0 , 10000 , 1, 1)
 
-        numInput2 = inputs.addIntegerSpinnerCommandInput('loads', 'Number of Loads', 0 , 1000 , 1, 1)
+        numInput2 = inputs.addIntegerSpinnerCommandInput('loads', 'Number of Loads', 0 , 10000 , 1, 1)
         
-        numInput3 = inputs.addIntegerSpinnerCommandInput('load_cases', 'Number of load_cases', 0 , 1000 , 1, 1)
+        numInput3 = inputs.addIntegerSpinnerCommandInput('load_cases', 'Number of load_cases', 0 , 10000 , 1, 1)
 
-        numInput4 = inputs.addIntegerSpinnerCommandInput('keep_ins', 'Number of keep_ins', 0 , 1000 , 1, 1)
+        numInput4 = inputs.addIntegerSpinnerCommandInput('keep_ins', 'Number of keep_ins', 0 , 10000 , 1, 1)
 
-        numInput5 = inputs.addIntegerSpinnerCommandInput('keep_outs', 'Number of keep_outs', 0 , 1000 , 1, 1)
+        numInput5 = inputs.addIntegerSpinnerCommandInput('keep_outs', 'Number of keep_outs', 0 , 10000 , 1, 1)
 
-        numInput6 = inputs.addIntegerSpinnerCommandInput('voxels', 'Number of voxels', 0 , 100000000 , 1, 1)
+        numInput6 = inputs.addIntegerSpinnerCommandInput('voxels', 'Number of voxels', 0 , 900000000 , 1, 1)
         
 
         # Connect to the execute event.
@@ -126,10 +126,10 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
         ui.messageBox('In command execute event handler.')
 
         # Call the getFeedback function
-        getFeedback(num1, num2, num3, num4, num5, num6, num7)
+        getFeedback(num1, num2, num3, num4, num5, num7)
 
 
-def getFeedback(num1, num2, num3, num4, num5, num6, num7):
+def getFeedback(num1, num2, num3, num4, num5, num6):
     ui = None
     try:
         app = adsk.core.Application.get()
