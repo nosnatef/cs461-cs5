@@ -25,7 +25,7 @@ while True:
             break
         print("Data: %s, Size: %s" % (data.decode('utf-8'), len(data)))
         #decoded_data = float(data.decode('utf-8'))
-        decoded_data = json.loads(decoded_data)
+        data = json.loads(data.decode())
         array = data.get("a")
         print("Array[2]: ", array[2])
         # prediction_data = output_prediction(decoded_data)
