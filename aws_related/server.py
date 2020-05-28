@@ -32,6 +32,7 @@ while True:
         print("array:", array)
         print("Array[2]: ", array[2])
         array = np.array(array)
+        array = array.astype(float)
         array[5] = round(math.log10(array[5]), 5)
         array = array.reshape(1, -1)
         print("reshaped array: ", array)
