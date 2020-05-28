@@ -88,7 +88,6 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
 
         numInput6 = inputs.addIntegerSpinnerCommandInput('voxels', 'Number of voxels', 0 , 999999999 , 1, 1)
         
-
         # Connect to the execute event.
         onExecute = MyCommandExecuteHandler()
         cmd.execute.add(onExecute)
@@ -120,13 +119,8 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
         
         num6 = inputs.itemById('voxels').value
         
-        # Log the voxels
-        num7 = round(math.log(num6, 5))
-
-        ui.messageBox('In command execute event handler.')
-
         # Call the getFeedback function
-        getFeedback(num1, num2, num3, num4, num5, num7)
+        getFeedback(num1, num2, num3, num4, num5, num6)
 
 
 def getFeedback(num1, num2, num3, num4, num5, num6):
@@ -140,9 +134,7 @@ def getFeedback(num1, num2, num3, num4, num5, num6):
 
         data = json.dumps({"a": inputlist})
 
-        #jsonarray = json.dumps(inputlist)
-
-        ui.messageBox("Starting Connecting!")
+        ui.messageBox("Start simulation!")
 
         # Connect to the server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -156,11 +148,9 @@ def getFeedback(num1, num2, num3, num4, num5, num6):
 
         s.close()
 
-        ui.messageBox("Finish Connecting")
+        ui.messageBox("End simulation")
         
         feedback = recvbuf.decode('utf-8')
-
-        ui.messageBox('Feedback:' + feedback)
         
         # Convert string to int
         check = int(feedback)
