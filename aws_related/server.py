@@ -24,10 +24,13 @@ while True:
         if not data or data.decode('utf-8') == 'exit':
             break
         print("Data: %s, Size: %s" % (data.decode('utf-8'), len(data)))
-        decoded_data = float(data.decode('utf-8'))
-        decoded_data = json.load(decoded_data)
+        #decoded_data = float(data.decode('utf-8'))
+        decoded_data = json.loads(decoded_data)
+        array = data.get("a")
+        print("Array[2]: ", array[2])
         # prediction_data = output_prediction(decoded_data)
-        decoded_data_np = np.array(decoded_data_np)
-        prediction_data = random_forest_model.predict(decoded_data)
-        clientsocket.send(str(prediction_data))
+        #decoded_data_np = np.array(decoded_data_np)
+        #prediction_data = random_forest_model.predict(decoded_data)
+        a = "1"
+        clientsocket.send(a.encode())
     clientsocket.close()
