@@ -86,7 +86,7 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
 
         numInput5 = inputs.addIntegerSpinnerCommandInput('keep_outs', 'Number of keep_outs', 0 , 10000 , 1, 1)
 
-        numInput6 = inputs.addIntegerSpinnerCommandInput('voxels', 'Number of voxels', 0 , 900000000 , 1, 1)
+        numInput6 = inputs.addIntegerSpinnerCommandInput('voxels', 'Number of voxels', 0 , 999999999 , 1, 1)
         
 
         # Connect to the execute event.
