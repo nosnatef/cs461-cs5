@@ -76,17 +76,18 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
         # Get the CommandInputs collection to create new command inputs.            
         inputs = cmd.commandInputs
 
-        numInput1 = inputs.addIntegerSpinnerCommandInput('geometries', 'Number of Geometries', 0 , 1000 , 1, 0)
+        numInput1 = inputs.addIntegerSpinnerCommandInput('geometries', 'Number of Geometries', 0 , 1000 , 1, 1)
 
-        numInput2 = inputs.addIntegerSpinnerCommandInput('loads', 'Number of Loads', 0 , 1000 , 1, 0)
+        numInput2 = inputs.addIntegerSpinnerCommandInput('loads', 'Number of Loads', 0 , 1000 , 1, 1)
         
-        numInput3 = inputs.addIntegerSpinnerCommandInput('load_cases', 'Number of load_cases', 0 , 1000 , 1, 0)
+        numInput3 = inputs.addIntegerSpinnerCommandInput('load_cases', 'Number of load_cases', 0 , 1000 , 1, 1)
 
-        numInput4 = inputs.addIntegerSpinnerCommandInput('keep_ins', 'Number of keep_ins', 0 , 1000 , 1, 0)
+        numInput4 = inputs.addIntegerSpinnerCommandInput('keep_ins', 'Number of keep_ins', 0 , 1000 , 1, 1)
 
-        numInput5 = inputs.addIntegerSpinnerCommandInput('keep_outs', 'Number of keep_outs', 0 , 1000 , 1, 0)
+        numInput5 = inputs.addIntegerSpinnerCommandInput('keep_outs', 'Number of keep_outs', 0 , 1000 , 1, 1)
+
+        numInput6 = inputs.addIntegerSpinnerCommandInput('voxels', 'Number of voxels', 0 , 100000000 , 1, 1)
         
-        numInput6 = inputs.addFloatSpinnerCommandInput('voxels', 'Number of voxels', '', 0 , 100000000, 1, 0)
 
         # Connect to the execute event.
         onExecute = MyCommandExecuteHandler()
@@ -137,16 +138,18 @@ def getFeedback(num1, num2, num3, num4, num5, num6, num7):
         # Create a input array
         inputlist = [num1, num2, num3, num4, num5, num6]
 
-        json_str = json.dumps(inputlist)
+        data = json.dumps({"a": inputlist})
+
+        #jsonarray = json.dumps(inputlist)
 
         ui.messageBox("Starting Connecting!")
 
         # Connect to the server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(('50.201.138.18', 1234))
+        s.connect(('3.15.0.151', 1234))
         
         # Send the array to server
-        s.send(json_str)   
+        s.send(data.encode())
 
         # Get the feedback for server
         recvbuf = s.recv(1024)
