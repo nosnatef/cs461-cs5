@@ -28,7 +28,7 @@ Setup is under assumption that you have Windows 10 as your default OS and you ha
 
 5. Create a ADD-IN by clicking the create button.
 
-6. Upon entering the Visual Studio Code when editing the ADD-IN copy the file API_input.py into this new file. File is located in cs461-cs5/API/API_input.py
+6. Upon entering the Visual Studio Code when editing the ADD-IN copy the file UI_full_version.py into this new file. File is located in cs461-cs5/API/UI_full_version.py
 
 7. Click the run button.
 
